@@ -1,0 +1,1126 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Starstruck</title>
+  <link
+    href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,600;1,400&family=Cinzel:wght@400;700&display=swap"
+    rel="stylesheet">
+  <style>
+    :root {
+      --bg: #f5f0e8;
+      --bg-alt: #ede8df;
+      --ink: #1c1a16;
+      --ink-mid: #5a5549;
+      --ink-dim: #a09890;
+      --accent: #b8860b;
+      --accent-soft: #d4a017;
+      --accent-bg: rgba(184, 134, 11, 0.10);
+      --accent-bg2: rgba(184, 134, 11, 0.18);
+      --star-color: #b8860b;
+      --border: rgba(28, 26, 22, 0.12);
+      --border-mid: rgba(28, 26, 22, 0.25);
+      --x-color: #7a7268;
+      --blocked-bg: rgba(28, 26, 22, 0.07);
+      --conflict-bg: rgba(180, 40, 40, 0.12);
+      --conflict-x: rgba(180, 40, 40, 0.7);
+
+      /* 12 soft region tints — light, distinct, not saturated */
+      --r0: rgba(100, 140, 200, 0.18);
+      --r1: rgba(80, 170, 110, 0.18);
+      --r2: rgba(200, 100, 80, 0.18);
+      --r3: rgba(150, 90, 190, 0.18);
+      --r4: rgba(50, 160, 180, 0.18);
+      --r5: rgba(200, 150, 50, 0.18);
+      --r6: rgba(80, 180, 150, 0.18);
+      --r7: rgba(190, 80, 130, 0.18);
+      --r8: rgba(120, 170, 60, 0.18);
+      --r9: rgba(210, 120, 50, 0.18);
+      --r10: rgba(80, 120, 210, 0.18);
+      --r11: rgba(170, 130, 60, 0.18);
+    }
+
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      background: var(--bg);
+      color: var(--ink);
+      font-family: 'Cormorant Garamond', Georgia, serif;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+
+    /* subtle paper texture */
+    body::before {
+      content: '';
+      position: fixed;
+      inset: 0;
+      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='300' height='300'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.75' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='300' height='300' filter='url(%23n)' opacity='0.03'/%3E%3C/svg%3E");
+      pointer-events: none;
+      z-index: 0;
+    }
+
+    .container {
+      position: relative;
+      z-index: 1;
+      width: 100%;
+      max-width: 620px;
+      padding: 40px 24px 80px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 24px;
+    }
+
+    /* ── Header ─────────────────────────────────────── */
+    header {
+      text-align: center;
+    }
+
+    .game-title {
+      font-family: 'Cinzel', serif;
+      font-size: 2.6rem;
+      font-weight: 700;
+      letter-spacing: 0.18em;
+      color: var(--ink);
+      line-height: 1;
+    }
+
+    .game-subtitle {
+      font-family: 'Cormorant Garamond', serif;
+      font-style: italic;
+      font-size: 1rem;
+      color: var(--ink-dim);
+      letter-spacing: 0.15em;
+      margin-top: 5px;
+    }
+
+    /* ── Puzzle list ─────────────────────────────────── */
+    .puzzle-list-bar {
+      width: 100%;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+
+    .puzzle-list-label {
+      font-family: 'Cinzel', serif;
+      font-size: 0.62rem;
+      letter-spacing: 0.18em;
+      color: var(--ink-dim);
+      text-transform: uppercase;
+      white-space: nowrap;
+    }
+
+    .puzzle-tabs {
+      display: flex;
+      gap: 6px;
+      flex-wrap: wrap;
+      flex: 1;
+    }
+
+    .puzzle-tab {
+      font-family: 'Cinzel', serif;
+      font-size: 0.65rem;
+      letter-spacing: 0.08em;
+      background: transparent;
+      border: 1px solid var(--border);
+      color: var(--ink-dim);
+      padding: 5px 13px;
+      cursor: pointer;
+      transition: all 0.18s;
+      border-radius: 2px;
+    }
+
+    .puzzle-tab:hover {
+      border-color: var(--accent);
+      color: var(--accent);
+    }
+
+    .puzzle-tab.active {
+      background: var(--accent-bg2);
+      border-color: var(--accent);
+      color: var(--accent);
+    }
+
+    /* ── Status bar ──────────────────────────────────── */
+    .status-bar {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      width: 100%;
+      padding: 0 2px;
+    }
+
+    .status-text {
+      font-size: 0.88rem;
+      color: var(--ink-mid);
+      letter-spacing: 0.04em;
+    }
+
+    .status-text strong {
+      color: var(--ink);
+      font-weight: 600;
+    }
+
+    #timer {
+      font-family: 'Cinzel', serif;
+      font-size: 0.88rem;
+      color: var(--ink-dim);
+      letter-spacing: 0.1em;
+      min-width: 52px;
+      text-align: center;
+      transition: color 0.3s;
+    }
+
+    #timer.running {
+      color: var(--accent);
+    }
+
+    #conflict-msg {
+      font-size: 0.82rem;
+      color: rgba(180, 40, 40, 0.8);
+      letter-spacing: 0.04em;
+    }
+
+    /* ── Board ───────────────────────────────────────── */
+    .board-wrapper {
+      position: relative;
+      width: 100%;
+    }
+
+    #board {
+      display: grid;
+      width: 100%;
+      aspect-ratio: 1;
+      border: 2px solid var(--border-mid);
+      background: #fff;
+      box-shadow: 0 4px 24px rgba(28, 26, 22, 0.10);
+    }
+
+    /* Region tints */
+    .region-0 {
+      background-color: var(--r0);
+    }
+
+    .region-1 {
+      background-color: var(--r1);
+    }
+
+    .region-2 {
+      background-color: var(--r2);
+    }
+
+    .region-3 {
+      background-color: var(--r3);
+    }
+
+    .region-4 {
+      background-color: var(--r4);
+    }
+
+    .region-5 {
+      background-color: var(--r5);
+    }
+
+    .region-6 {
+      background-color: var(--r6);
+    }
+
+    .region-7 {
+      background-color: var(--r7);
+    }
+
+    .region-8 {
+      background-color: var(--r8);
+    }
+
+    .region-9 {
+      background-color: var(--r9);
+    }
+
+    .region-10 {
+      background-color: var(--r10);
+    }
+
+    .region-11 {
+      background-color: var(--r11);
+    }
+
+    .cell {
+      position: relative;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      border: 0.5px solid rgba(28, 26, 22, 0.06);
+      user-select: none;
+      -webkit-user-select: none;
+      transition: filter 0.12s;
+    }
+
+    .cell:hover {
+      filter: brightness(0.94);
+    }
+
+    /* Region borders */
+    .cell.border-top {
+      border-top: 2px solid rgba(28, 26, 22, 0.35) !important;
+    }
+
+    .cell.border-bottom {
+      border-bottom: 2px solid rgba(28, 26, 22, 0.35) !important;
+    }
+
+    .cell.border-left {
+      border-left: 2px solid rgba(28, 26, 22, 0.35) !important;
+    }
+
+    .cell.border-right {
+      border-right: 2px solid rgba(28, 26, 22, 0.35) !important;
+    }
+
+    .cell .cell-content {
+      font-size: 1.4rem;
+      line-height: 1;
+      pointer-events: none;
+      transition: all 0.12s;
+    }
+
+    /* Scale for larger grids */
+    .grid-7 .cell .cell-content,
+    .grid-8 .cell .cell-content {
+      font-size: 1.1rem;
+    }
+
+    .grid-9 .cell .cell-content,
+    .grid-10 .cell .cell-content {
+      font-size: 0.95rem;
+    }
+
+    .grid-11 .cell .cell-content,
+    .grid-12 .cell .cell-content {
+      font-size: 0.8rem;
+    }
+
+    /* ── Cell states ─────────────────────────────── */
+
+    /* Star */
+    .cell.has-star .cell-content {
+      color: var(--star-color);
+      font-size: 1.3rem;
+      animation: starPop 0.22s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    }
+
+    /* Manually placed X — and auto-blocked X: identical style */
+    .cell.has-x .cell-content {
+      color: var(--x-color);
+      font-size: 0.95rem;
+      font-family: 'Cinzel', serif;
+      font-weight: 600;
+    }
+
+    /* Blocked cell background — subtle tint on top of region color */
+    .cell.has-x {
+      background-image: repeating-linear-gradient(45deg,
+          rgba(28, 26, 22, 0.04) 0px,
+          rgba(28, 26, 22, 0.04) 1px,
+          transparent 1px,
+          transparent 6px);
+    }
+
+    /* Conflict */
+    .cell.conflict {
+      background-color: var(--conflict-bg) !important;
+    }
+
+    .cell.conflict .cell-content {
+      color: var(--conflict-x) !important;
+    }
+
+    @keyframes starPop {
+      0% {
+        transform: scale(0.3);
+        opacity: 0;
+      }
+
+      70% {
+        transform: scale(1.25);
+      }
+
+      100% {
+        transform: scale(1);
+        opacity: 1;
+      }
+    }
+
+    @keyframes conflictShake {
+
+      0%,
+      100% {
+        transform: translateX(0);
+      }
+
+      25% {
+        transform: translateX(-2px);
+      }
+
+      75% {
+        transform: translateX(2px);
+      }
+    }
+
+    /* ── Controls ────────────────────────────────────── */
+    .controls {
+      display: flex;
+      gap: 10px;
+      align-items: center;
+      flex-wrap: wrap;
+      justify-content: center;
+    }
+
+    .ctrl-btn {
+      font-family: 'Cinzel', serif;
+      font-size: 0.65rem;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      background: transparent;
+      border: 1px solid var(--border);
+      color: var(--ink-mid);
+      padding: 8px 18px;
+      cursor: pointer;
+      transition: all 0.18s;
+      border-radius: 2px;
+    }
+
+    .ctrl-btn:hover {
+      border-color: var(--border-mid);
+      color: var(--ink);
+      background: var(--bg-alt);
+    }
+
+    .ctrl-btn.load-btn:hover {
+      border-color: var(--accent);
+      color: var(--accent);
+      background: var(--accent-bg);
+    }
+
+    .ctrl-btn.danger:hover {
+      border-color: rgba(180, 40, 40, 0.4);
+      color: rgba(180, 40, 40, 0.85);
+    }
+
+    /* ── Empty state ─────────────────────────────────── */
+    #empty-state {
+      width: 100%;
+      aspect-ratio: 1;
+      max-height: 480px;
+      border: 2px dashed var(--border-mid);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 12px;
+      cursor: pointer;
+      transition: all 0.2s;
+      border-radius: 2px;
+    }
+
+    #empty-state:hover {
+      border-color: var(--accent);
+      background: var(--accent-bg);
+    }
+
+    #empty-state:hover .empty-icon {
+      color: var(--accent);
+    }
+
+    .empty-icon {
+      font-size: 2.8rem;
+      color: var(--ink-dim);
+      transition: color 0.2s;
+      line-height: 1;
+    }
+
+    .empty-title {
+      font-family: 'Cinzel', serif;
+      font-size: 0.82rem;
+      letter-spacing: 0.16em;
+      color: var(--ink-mid);
+      text-transform: uppercase;
+    }
+
+    .empty-sub {
+      font-style: italic;
+      font-size: 0.88rem;
+      color: var(--ink-dim);
+      text-align: center;
+      max-width: 240px;
+      line-height: 1.5;
+    }
+
+    /* ── Rules ───────────────────────────────────────── */
+    .rules {
+      width: 100%;
+      border: 1px solid var(--border);
+      padding: 14px 18px;
+      background: var(--bg-alt);
+      border-radius: 2px;
+    }
+
+    .rules-title {
+      font-family: 'Cinzel', serif;
+      font-size: 0.6rem;
+      letter-spacing: 0.2em;
+      color: var(--accent);
+      margin-bottom: 9px;
+      text-transform: uppercase;
+    }
+
+    .rules ul {
+      list-style: none;
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+    }
+
+    .rules li {
+      font-size: 0.85rem;
+      color: var(--ink-mid);
+      padding-left: 14px;
+      position: relative;
+      line-height: 1.45;
+    }
+
+    .rules li::before {
+      content: '◆';
+      position: absolute;
+      left: 0;
+      font-size: 0.38rem;
+      top: 0.38em;
+      color: var(--accent);
+      opacity: 0.6;
+    }
+
+    /* ── Toast ───────────────────────────────────────── */
+    #toast {
+      position: fixed;
+      bottom: 28px;
+      left: 50%;
+      transform: translateX(-50%) translateY(16px);
+      background: var(--ink);
+      color: var(--bg);
+      font-family: 'Cinzel', serif;
+      font-size: 0.68rem;
+      letter-spacing: 0.1em;
+      padding: 9px 22px;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.25s, transform 0.25s;
+      z-index: 200;
+      border-radius: 2px;
+      white-space: nowrap;
+    }
+
+    #toast.show {
+      opacity: 1;
+      transform: translateX(-50%) translateY(0);
+    }
+
+    #toast.error {
+      background: rgba(160, 30, 30, 0.92);
+    }
+
+    /* ── Win overlay ─────────────────────────────────── */
+    #win-overlay {
+      display: none;
+      position: fixed;
+      inset: 0;
+      background: rgba(245, 240, 232, 0.92);
+      z-index: 100;
+      align-items: center;
+      justify-content: center;
+      flex-direction: column;
+      gap: 14px;
+      animation: fadeIn 0.35s ease;
+    }
+
+    #win-overlay.show {
+      display: flex;
+    }
+
+    @keyframes fadeIn {
+      from {
+        opacity: 0;
+      }
+
+      to {
+        opacity: 1;
+      }
+    }
+
+    .win-stars {
+      font-size: 2.2rem;
+      letter-spacing: 0.35em;
+      color: var(--accent);
+      animation: starPop 0.5s 0.2s both cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    }
+
+    .win-title {
+      font-family: 'Cinzel', serif;
+      font-size: 2.8rem;
+      font-weight: 700;
+      letter-spacing: 0.18em;
+      color: var(--ink);
+    }
+
+    .win-sub {
+      font-style: italic;
+      color: var(--ink-mid);
+      font-size: 1.1rem;
+    }
+
+    .win-time {
+      font-family: 'Cinzel', serif;
+      font-size: 0.9rem;
+      color: var(--accent);
+      letter-spacing: 0.1em;
+    }
+
+    .win-next-btn {
+      font-family: 'Cinzel', serif;
+      font-size: 0.72rem;
+      letter-spacing: 0.14em;
+      background: var(--accent-bg2);
+      border: 1px solid var(--accent);
+      color: var(--accent);
+      padding: 11px 30px;
+      cursor: pointer;
+      transition: all 0.18s;
+      margin-top: 6px;
+      border-radius: 2px;
+    }
+
+    .win-next-btn:hover {
+      background: rgba(184, 134, 11, 0.28);
+    }
+
+    .win-actions {
+      display: flex;
+      gap: 12px;
+      margin-top: 10px;
+    }
+
+    .win-secondary-btn {
+      font-family: 'Cinzel', serif;
+      font-size: 0.65rem;
+      letter-spacing: 0.12em;
+      background: transparent;
+      border: 1px solid var(--border-mid);
+      color: var(--ink-mid);
+      padding: 9px 20px;
+      cursor: pointer;
+      transition: all 0.18s;
+      border-radius: 2px;
+    }
+
+    .win-secondary-btn:hover {
+      border-color: var(--ink);
+      color: var(--ink);
+      background: var(--bg-alt);
+    }
+  </style>
+</head>
+
+<body>
+
+  <div class="container">
+
+    <header>
+      <div class="game-title">STARSTRUCK</div>
+      <div class="game-subtitle">a constellation puzzle</div>
+    </header>
+
+    <!-- Puzzle tabs (populated when a file is loaded) -->
+    <div class="puzzle-list-bar" id="puzzle-list-bar" style="display:none">
+      <span class="puzzle-list-label">Puzzles</span>
+      <div class="puzzle-tabs" id="puzzle-tabs"></div>
+    </div>
+
+    <!-- Status bar (hidden until a puzzle is loaded) -->
+    <div class="status-bar" id="status-bar" style="display:none">
+      <div class="status-text">Stars: <strong id="star-count">0</strong> / <strong id="star-total">0</strong></div>
+      <div id="timer">0:00</div>
+      <div id="conflict-msg" style="display:none">Conflict</div>
+    </div>
+
+    <!-- Board or empty state -->
+    <div class="board-wrapper">
+      <div id="empty-state" onclick="document.getElementById('puzzle-file-input').click()">
+        <div class="empty-icon">☆</div>
+        <div class="empty-title">No puzzle loaded</div>
+        <div class="empty-sub">Click here or use "Load Puzzles" below to open a JSON file</div>
+      </div>
+      <div id="board" style="display:none"></div>
+    </div>
+
+    <!-- Controls -->
+    <div class="controls">
+      <button class="ctrl-btn load-btn" onclick="document.getElementById('puzzle-file-input').click()">⊕ Load
+        Puzzles</button>
+      <button class="ctrl-btn" onclick="undo()" id="btn-undo" style="display:none">↩ Undo</button>
+      <button class="ctrl-btn danger" onclick="resetBoard()" id="btn-reset" style="display:none">Reset</button>
+      <input type="file" id="puzzle-file-input" accept=".json" style="display:none" onchange="handlePuzzleFile(event)">
+    </div>
+
+    <div class="rules">
+      <div class="rules-title">The Laws of the Cosmos</div>
+      <ul>
+        <li>Each row must contain exactly one star</li>
+        <li>Each column must contain exactly one star</li>
+        <li>Each colored region must contain exactly one star</li>
+        <li>Stars may not touch — not even diagonally</li>
+        <li>Click once for ✕ &nbsp;·&nbsp; click again for ★ &nbsp;·&nbsp; click again to clear</li>
+      </ul>
+    </div>
+
+  </div>
+
+  <div id="toast"></div>
+
+  <div id="win-overlay">
+    <div class="win-stars">★ ★ ★</div>
+    <div class="win-title">SOLVED</div>
+    <div class="win-sub" id="win-sub-text"></div>
+    <div class="win-time" id="win-time"></div>
+    <button class="win-next-btn" id="win-next-btn" onclick="nextPuzzle()">Next Puzzle →</button>
+    <div class="win-actions">
+      <button class="win-secondary-btn" onclick="showMenu()">↩ Back to Menu</button>
+      <button class="win-secondary-btn" onclick="document.getElementById('puzzle-file-input').click()">⊕ Load
+        More</button>
+    </div>
+  </div>
+
+  <script>
+    // ─── STATE ─────────────────────────────────────────────────────
+    let puzzles = [];          // all loaded puzzles (flat array)
+    let currentIdx = 0;
+    let puzzle = null;
+    let N = 0;
+    let board = [];
+    let autoBlocked = [];
+    let history = [];
+
+    // Timer
+    let timerSeconds = 0;
+    let timerInterval = null;
+    let timerStarted = false;
+
+    // ─── TIMER ─────────────────────────────────────────────────────
+    function startTimer() {
+      if (timerInterval) return;
+      timerInterval = setInterval(() => { timerSeconds++; updateTimerDisplay(); }, 1000);
+      document.getElementById('timer').classList.add('running');
+    }
+
+    function stopTimer() {
+      clearInterval(timerInterval);
+      timerInterval = null;
+      document.getElementById('timer').classList.remove('running');
+    }
+
+    function resetTimer() {
+      stopTimer();
+      timerSeconds = 0;
+      timerStarted = false;
+      updateTimerDisplay();
+    }
+
+    function updateTimerDisplay() {
+      const m = Math.floor(timerSeconds / 60);
+      const s = timerSeconds % 60;
+      document.getElementById('timer').textContent = `${m}:${s.toString().padStart(2, '0')}`;
+    }
+
+    function formatTime(secs) {
+      const m = Math.floor(secs / 60);
+      const s = secs % 60;
+      return m > 0 ? `${m}m ${s}s` : `${s}s`;
+    }
+
+    // ─── FILE LOADER ───────────────────────────────────────────────
+    function handlePuzzleFile(event) {
+      const file = event.target.files[0];
+      event.target.value = '';
+      if (!file) return;
+
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        let data;
+        try { data = JSON.parse(e.target.result); }
+        catch { showToast('Invalid JSON file.', true); return; }
+
+        if (!Array.isArray(data) || data.length === 0) {
+          showToast('No puzzles found in file.', true); return;
+        }
+        for (const p of data) {
+          if (!p.size || !p.name || !Array.isArray(p.regions) || !Array.isArray(p.solution)) {
+            showToast('File contains invalid puzzle data.', true); return;
+          }
+        }
+
+        // Merge, skipping duplicates
+        let added = 0;
+        for (const p of data) {
+          const dup = puzzles.some(ex =>
+            (p.seed !== undefined && ex.seed === p.seed) || ex.name === p.name
+          );
+          if (!dup) { puzzles.push(p); added++; }
+        }
+
+        if (added === 0) {
+          showToast('All puzzles already loaded.'); return;
+        }
+
+        showToast(`✓ ${added} puzzle${added > 1 ? 's' : ''} loaded — ${puzzles.length} total`);
+        rebuildTabs();
+
+        // Jump to first newly added puzzle
+        const firstNew = puzzles.length - added;
+        loadPuzzle(firstNew);
+      };
+      reader.readAsText(file);
+    }
+
+    // ─── TABS ──────────────────────────────────────────────────────
+    function rebuildTabs() {
+      const bar = document.getElementById('puzzle-list-bar');
+      const tabs = document.getElementById('puzzle-tabs');
+      tabs.innerHTML = '';
+
+      puzzles.forEach((p, i) => {
+        const btn = document.createElement('button');
+        btn.className = 'puzzle-tab' + (i === currentIdx ? ' active' : '');
+        btn.textContent = `${p.name} (${p.size}×${p.size})`;
+        btn.onclick = () => loadPuzzle(i);
+        tabs.appendChild(btn);
+      });
+
+      bar.style.display = puzzles.length > 0 ? 'flex' : 'none';
+    }
+
+    // ─── LOAD PUZZLE ───────────────────────────────────────────────
+    function loadPuzzle(idx) {
+      currentIdx = idx;
+      puzzle = puzzles[idx];
+      N = puzzle.size;
+
+      board = Array.from({ length: N }, () => Array(N).fill(0));
+      autoBlocked = Array.from({ length: N }, () => Array(N).fill(false));
+      history = [];
+
+      // Show board, hide empty state
+      document.getElementById('empty-state').style.display = 'none';
+      document.getElementById('board').style.display = 'grid';
+      document.getElementById('status-bar').style.display = 'flex';
+      document.getElementById('btn-undo').style.display = '';
+      document.getElementById('btn-reset').style.display = '';
+
+      document.getElementById('star-total').textContent = N;
+      rebuildTabs();
+      resetTimer();
+      renderBoard();
+      updateStatus();
+      document.getElementById('win-overlay').classList.remove('show');
+    }
+
+    // ─── RENDER ────────────────────────────────────────────────────
+    function renderBoard() {
+      const el = document.getElementById('board');
+      el.style.gridTemplateColumns = `repeat(${N}, 1fr)`;
+      el.className = `grid-${N}`;
+      el.style.display = 'grid';
+      el.innerHTML = '';
+
+      for (let r = 0; r < N; r++) {
+        for (let c = 0; c < N; c++) {
+          const cell = document.createElement('div');
+          cell.className = `cell region-${puzzle.regions[r][c]}`;
+          cell.dataset.r = r;
+          cell.dataset.c = c;
+
+          if (r === 0 || puzzle.regions[r - 1][c] !== puzzle.regions[r][c]) cell.classList.add('border-top');
+          if (r === N - 1 || puzzle.regions[r + 1][c] !== puzzle.regions[r][c]) cell.classList.add('border-bottom');
+          if (c === 0 || puzzle.regions[r][c - 1] !== puzzle.regions[r][c]) cell.classList.add('border-left');
+          if (c === N - 1 || puzzle.regions[r][c + 1] !== puzzle.regions[r][c]) cell.classList.add('border-right');
+
+          const content = document.createElement('div');
+          content.className = 'cell-content';
+          cell.appendChild(content);
+          cell.addEventListener('click', () => onCellClick(r, c));
+          el.appendChild(cell);
+        }
+      }
+      refreshCells();
+    }
+
+    function refreshCells() {
+      for (let r = 0; r < N; r++) {
+        for (let c = 0; c < N; c++) {
+          const cell = getCellEl(r, c);
+          const content = cell.querySelector('.cell-content');
+          const v = board[r][c];
+          cell.classList.remove('has-star', 'has-x', 'conflict');
+
+          if (v === 2) {
+            cell.classList.add('has-star');
+            content.textContent = '★';
+          } else if (v === 1) {
+            cell.classList.add('has-x');
+            content.textContent = '✕';
+          } else {
+            content.textContent = '';
+          }
+        }
+      }
+      highlightConflicts();
+    }
+
+    function getCellEl(r, c) {
+      return document.querySelector(`#board .cell[data-r="${r}"][data-c="${c}"]`);
+    }
+
+    // ─── INTERACTION ───────────────────────────────────────────────
+    function onCellClick(r, c) {
+      if (!timerStarted) { timerStarted = true; startTimer(); }
+
+      const prev = board[r][c];
+
+      if (prev === 2) {
+        removeStarBlocks(r, c);
+        board[r][c] = 0;
+        autoBlocked[r][c] = false;
+        pushHistory(r, c, prev, []);
+      } else if (prev === 0) {
+        board[r][c] = 1;
+        pushHistory(r, c, 0, []);
+      } else if (prev === 1 && !autoBlocked[r][c]) {
+        placeStar(r, c);
+        return;
+      } else if (prev === 1 && autoBlocked[r][c]) {
+        // clicking an auto-blocked cell cycles it back to empty
+        board[r][c] = 0;
+        autoBlocked[r][c] = false;
+        pushHistory(r, c, prev, []);
+      }
+
+      refreshCells();
+      updateStatus();
+      checkWin();
+    }
+
+    function placeStar(r, c) {
+      const prevState = board[r][c];
+      board[r][c] = 2;
+      const blocked = [];
+
+      function autoBlock(nr, nc) {
+        if (nr >= 0 && nr < N && nc >= 0 && nc < N && board[nr][nc] === 0) {
+          board[nr][nc] = 1;
+          autoBlocked[nr][nc] = true;
+          blocked.push({ r: nr, c: nc });
+        }
+      }
+
+      for (let dr = -1; dr <= 1; dr++)
+        for (let dc = -1; dc <= 1; dc++)
+          if (dr !== 0 || dc !== 0) autoBlock(r + dr, c + dc);
+
+      for (let nc = 0; nc < N; nc++) autoBlock(r, nc);
+      for (let nr = 0; nr < N; nr++) autoBlock(nr, c);
+
+      const regionId = puzzle.regions[r][c];
+      for (let nr = 0; nr < N; nr++)
+        for (let nc = 0; nc < N; nc++)
+          if (puzzle.regions[nr][nc] === regionId) autoBlock(nr, nc);
+
+      pushHistory(r, c, prevState, blocked);
+      refreshCells();
+      updateStatus();
+      checkWin();
+    }
+
+    function removeStarBlocks(r, c) {
+      for (let i = history.length - 1; i >= 0; i--) {
+        const h = history[i];
+        if (h.r === r && h.c === c && h.newState === 2) {
+          h.autoBlocks.forEach(({ r: br, c: bc }) => {
+            if (autoBlocked[br][bc] && board[br][bc] === 1) {
+              board[br][bc] = 0;
+              autoBlocked[br][bc] = false;
+            }
+          });
+          break;
+        }
+      }
+    }
+
+    function pushHistory(r, c, prevState, autoBlocks) {
+      history.push({ r, c, prevState, newState: board[r][c], autoBlocks });
+    }
+
+    function undo() {
+      if (history.length === 0) return;
+      const h = history.pop();
+      if (h.newState === 2) {
+        h.autoBlocks.forEach(({ r: br, c: bc }) => {
+          if (autoBlocked[br][bc]) { board[br][bc] = 0; autoBlocked[br][bc] = false; }
+        });
+      }
+      board[h.r][h.c] = h.prevState;
+      autoBlocked[h.r][h.c] = false;
+      refreshCells();
+      updateStatus();
+    }
+
+    function resetBoard() { loadPuzzle(currentIdx); }
+
+    // ─── VALIDATION ────────────────────────────────────────────────
+    function highlightConflicts() {
+      const cf = Array.from({ length: N }, () => Array(N).fill(false));
+
+      for (let r = 0; r < N; r++) {
+        const s = []; for (let c = 0; c < N; c++) if (board[r][c] === 2) s.push(c);
+        if (s.length > 1) s.forEach(c => cf[r][c] = true);
+      }
+      for (let c = 0; c < N; c++) {
+        const s = []; for (let r = 0; r < N; r++) if (board[r][c] === 2) s.push(r);
+        if (s.length > 1) s.forEach(r => cf[r][c] = true);
+      }
+
+      const rs = {};
+      for (let r = 0; r < N; r++) for (let c = 0; c < N; c++) {
+        if (board[r][c] === 2) {
+          const reg = puzzle.regions[r][c];
+          if (!rs[reg]) rs[reg] = [];
+          rs[reg].push({ r, c });
+        }
+      }
+      Object.values(rs).forEach(cells => {
+        if (cells.length > 1) cells.forEach(({ r, c }) => cf[r][c] = true);
+      });
+
+      for (let r = 0; r < N; r++) for (let c = 0; c < N; c++) {
+        if (board[r][c] === 2) {
+          for (let dr = -1; dr <= 1; dr++) for (let dc = -1; dc <= 1; dc++) {
+            if (!dr && !dc) continue;
+            const nr = r + dr, nc = c + dc;
+            if (nr >= 0 && nr < N && nc >= 0 && nc < N && board[nr][nc] === 2) { cf[r][c] = true; cf[nr][nc] = true; }
+          }
+        }
+      }
+
+      let any = false;
+      for (let r = 0; r < N; r++) for (let c = 0; c < N; c++) {
+        const el = getCellEl(r, c);
+        if (cf[r][c]) { el.classList.add('conflict'); any = true; }
+        else el.classList.remove('conflict');
+      }
+      document.getElementById('conflict-msg').style.display = any ? 'block' : 'none';
+    }
+
+    function countStars() {
+      let n = 0;
+      for (let r = 0; r < N; r++) for (let c = 0; c < N; c++) if (board[r][c] === 2) n++;
+      return n;
+    }
+
+    function updateStatus() {
+      document.getElementById('star-count').textContent = countStars();
+    }
+
+    function checkWin() {
+      if (countStars() !== N) return;
+      for (let r = 0; r < N; r++) {
+        let n = 0; for (let c = 0; c < N; c++) if (board[r][c] === 2) n++;
+        if (n !== 1) return;
+      }
+      for (let c = 0; c < N; c++) {
+        let n = 0; for (let r = 0; r < N; r++) if (board[r][c] === 2) n++;
+        if (n !== 1) return;
+      }
+      const rs = {};
+      for (let r = 0; r < N; r++) for (let c = 0; c < N; c++) {
+        if (board[r][c] === 2) {
+          const reg = puzzle.regions[r][c];
+          rs[reg] = (rs[reg] || 0) + 1;
+          if (rs[reg] > 1) return;
+        }
+      }
+      for (let r = 0; r < N; r++) for (let c = 0; c < N; c++) {
+        if (board[r][c] === 2) {
+          for (let dr = -1; dr <= 1; dr++) for (let dc = -1; dc <= 1; dc++) {
+            if (!dr && !dc) continue;
+            const nr = r + dr, nc = c + dc;
+            if (nr >= 0 && nr < N && nc >= 0 && nc < N && board[nr][nc] === 2) return;
+          }
+        }
+      }
+      stopTimer();
+      showWin();
+    }
+
+    function showWin() {
+      document.getElementById('win-sub-text').textContent = `"${puzzle.name}" is complete.`;
+      document.getElementById('win-time').textContent = `Solved in ${formatTime(timerSeconds)}`;
+
+      const nextBtn = document.getElementById('win-next-btn');
+      if (currentIdx < puzzles.length - 1) {
+        nextBtn.style.display = 'block';
+        nextBtn.textContent = 'Next Puzzle →';
+      } else {
+        // If all puzzles are done, we can either hide it or change it to "Back to Menu"
+        // I'll hide it since we now have the secondary "Back to Menu" button
+        nextBtn.style.display = 'none';
+      }
+
+      document.getElementById('win-overlay').classList.add('show');
+    }
+
+    function nextPuzzle() { loadPuzzle(currentIdx + 1); }
+
+    function showMenu() {
+      stopTimer();
+      document.getElementById('win-overlay').classList.remove('show');
+      document.getElementById('board').style.display = 'none';
+      document.getElementById('status-bar').style.display = 'none';
+      document.getElementById('empty-state').style.display = 'flex';
+      document.getElementById('btn-undo').style.display = 'none';
+      document.getElementById('btn-reset').style.display = 'none';
+      // We keep the puzzle tabs visible if there are puzzles
+      rebuildTabs();
+    }
+
+    // ─── TOAST ─────────────────────────────────────────────────────
+    let toastTimer = null;
+    function showToast(msg, isError = false) {
+      const el = document.getElementById('toast');
+      el.textContent = msg;
+      el.classList.toggle('error', isError);
+      el.classList.add('show');
+      clearTimeout(toastTimer);
+      toastTimer = setTimeout(() => el.classList.remove('show'), 3000);
+    }
+  </script>
+</body>
+
+</html>
