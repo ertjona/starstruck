@@ -1,6 +1,6 @@
 # Starstruck
 
-A constellation-themed logic puzzle game.
+Starstruck is a strategy logic game where you place stars on a grid according to a set of rules. You need to use logical thinking to continuously narrow down the possibilities until all the stars fit perfectly. I often play this game on Netflix's Puzzled app and really enjoy it. I'm currently trying to make my own version.
 
 ## Gameplay
 
@@ -30,4 +30,4 @@ python3 starstruck_generator.py --size 8 --count 5 --save puzzles.json
 1. Open `starstruck.html` in your browser.
 2. Click **Load Puzzles** and select your `puzzles.json` file.
 3. Click a cell once for **X**, twice for **★**, and three times to clear.
-4. Solve the constellation!
+4. Solve the puzzle!

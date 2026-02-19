@@ -8,12 +8,10 @@ Generates Starstruck puzzles of any size N with guaranteed:
   - No two stars touch (including diagonally)
 
 Usage:
-    python starstruck_generator.py              # generate 3x easy (5x5) + 3x medium (8x8)
-    python starstruck_generator.py --size 5 --count 3
+    python starstruck_generator.py              # generate 1x 5x5, 1x 6x6, 1x 7x7, 1x 8x8 and 1x 9x9. 
+    python starstruck_generator.py --size 5 --count 3 --save puzzles.json   # generate 3 5x5 puzzles and save them to puzzles.json
     python starstruck_generator.py --size 8 --count 3
     python starstruck_generator.py --size 10 --count 1
-    python starstruck_generator.py --format js  # output as JS array (paste into game)
-    python starstruck_generator.py --format json
 """
 
 import random
@@ -273,10 +271,10 @@ def main():
         formatter_class=argparse.RawDescriptionHelpFormatter,
         epilog="""
 Examples:
-  # Generate 3 easy + 3 medium puzzles, save to puzzles.json (load in browser)
+  # Generate 1x 5x5, 1x 6x6, 1x 7x7, 1x 8x8 and 1x 9x9
   python starstruck_generator.py --save puzzles.json
 
-  # Generate 5 medium-only puzzles and save
+  # Generate 5 8x8 puzzles and save
   python starstruck_generator.py --size 8 --count 5 --save puzzles.json
 
   # Append to an existing puzzles.json instead of overwriting
@@ -287,9 +285,9 @@ Examples:
         """
     )
     parser.add_argument("--size",    type=int, default=None,
-                        help="Grid size N — any value from 5 upward (default: generates 6×6 and 7×7)")
-    parser.add_argument("--count",   type=int, default=3,
-                        help="Number of puzzles per size (default: 3)")
+                        help="Grid size N — any value from 5 upward (default: 5, 6, 7, 8, 9)")
+    parser.add_argument("--count",   type=int, default=1,
+                        help="Number of puzzles per size (default: 1)")
     parser.add_argument("--seed",    type=int, default=None,
                         help="Starting random seed for reproducibility")
     parser.add_argument("--save",    type=str, default=None, metavar="FILE",
@@ -300,7 +298,7 @@ Examples:
                         help="Show attempt counts during generation")
     args = parser.parse_args()
 
-    sizes = [args.size] if args.size else [6, 7]
+    sizes = [args.size] if args.size else [5, 6, 7, 8, 9]
     all_new_puzzles = []  # flat list for JSON output
 
     for size in sizes:
