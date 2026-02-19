@@ -169,7 +169,10 @@ def grow_regions(N, stars, rng):
 
 def generate_puzzle(N, seed=None, max_attempts=None, verbose=False):
     if max_attempts is None:
-        max_attempts = 5000 if N <= 6 else 20000
+        if N <= 6: max_attempts = 5000
+        elif N <= 8: max_attempts = 20000
+        elif N == 9: max_attempts = 40000
+        else: max_attempts = 100000
     """
     Generate a single valid Starstruck puzzle of size N.
 
@@ -184,6 +187,9 @@ def generate_puzzle(N, seed=None, max_attempts=None, verbose=False):
     rng = random.Random(actual_seed)
 
     for attempt in range(max_attempts):
+        if verbose and (attempt + 1) % 1000 == 0:
+            print(f"    ... searching ({attempt + 1}/{max_attempts})", end="\r", flush=True)
+
         # Step 1: valid star placement
         stars = generate_valid_stars(N, rng)
         if not stars:
@@ -207,6 +213,7 @@ def generate_puzzle(N, seed=None, max_attempts=None, verbose=False):
             solution[r][c] = 1
 
         if verbose:
+            print(" " * 45, end="\r") # Clear progress line
             print(f"  Found after {attempt + 1} attempts (seed={actual_seed})")
 
         return {
