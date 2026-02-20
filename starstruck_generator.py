@@ -170,10 +170,10 @@ def grow_regions(N, stars, rng):
 
 def generate_puzzle(N, seed=None, max_attempts=None, verbose=False, timeout_seconds=60):
     if max_attempts is None:
-        if N <= 6: max_attempts = 5000
+        if N <= 7: max_attempts = 5000
         elif N <= 8: max_attempts = 20000
-        elif N == 9: max_attempts = 40000
-        else: max_attempts = 100000
+        elif N == 9: max_attempts = 50000
+        else: max_attempts = 200000
     """
     Generate a single valid Starstruck puzzle of size N.
 
@@ -324,11 +324,23 @@ Examples:
 
         for i in range(args.count):
             print(f"  Puzzle {i+1}/{args.count}...", end=" ", flush=True)
-            p = generate_puzzle(size, seed=attempt_seed, verbose=args.verbose)
+            
+            p = None
+            max_retries = 3
+            for retry in range(max_retries):
+                p = generate_puzzle(size, seed=attempt_seed, verbose=args.verbose)
+                if p:
+                    break
+                if retry < max_retries - 1:
+                    if args.verbose:
+                        print(f"\n    Retrying... ({retry + 2}/{max_retries})", end=" ", flush=True)
+                    attempt_seed = random.randint(0, 999999) # New seed for retry
+
             if p:
                 name = get_name(size, len(all_new_puzzles))
                 print(f"✓  (seed={p['seed']})")
-                print_puzzle(p, name)
+                if not args.save or args.verbose:
+                    print_puzzle(p, name)
                 all_new_puzzles.append({
                     "name":     name,
                     "size":     size,
@@ -337,7 +349,7 @@ Examples:
                     "solution": p["solution"],
                 })
             else:
-                print("✗  FAILED — try a different seed")
+                print("✗  FAILED — gave up after multiple retries")
             
             attempt_seed += 1
 
