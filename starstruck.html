@@ -647,7 +647,6 @@
 
     <header>
       <div class="game-title">STARSTRUCK</div>
-      <div class="game-subtitle">a constellation puzzle</div>
     </header>
 
     <!-- Puzzle tabs (populated when a file is loaded) -->
@@ -1120,6 +1119,26 @@
       clearTimeout(toastTimer);
       toastTimer = setTimeout(() => el.classList.remove('show'), 3000);
     }
+    // ─── INIT ──────────────────────────────────────────────────────
+    window.addEventListener('DOMContentLoaded', () => {
+      // Try to auto-load puzzles.json if it exists on the same server
+      fetch('puzzles.json')
+        .then(response => {
+          if (response.ok) return response.json();
+          throw new Error('No puzzles.json found');
+        })
+        .then(data => {
+          if (Array.isArray(data) && data.length > 0) {
+            puzzles = data;
+            rebuildTabs();
+            loadPuzzle(0);
+            showToast(`✓ Auto-loaded ${puzzles.length} puzzles`);
+          }
+        })
+        .catch(err => {
+          console.log('No default puzzles.json found. User can load manually.');
+        });
+    });
   </script>
 </body>
 

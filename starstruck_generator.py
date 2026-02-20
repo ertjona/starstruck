@@ -17,6 +17,7 @@ Usage:
 import random
 import argparse
 import json
+import time
 from collections import defaultdict, deque
 
 
@@ -167,7 +168,7 @@ def grow_regions(N, stars, rng):
 
 # ─── MAIN GENERATOR ───────────────────────────────────────────────────────────
 
-def generate_puzzle(N, seed=None, max_attempts=None, verbose=False):
+def generate_puzzle(N, seed=None, max_attempts=None, verbose=False, timeout_seconds=60):
     if max_attempts is None:
         if N <= 6: max_attempts = 5000
         elif N <= 8: max_attempts = 20000
@@ -185,8 +186,15 @@ def generate_puzzle(N, seed=None, max_attempts=None, verbose=False):
     rng = random.Random(seed)
     actual_seed = seed if seed is not None else rng.randint(0, 999999)
     rng = random.Random(actual_seed)
+    start_time = time.time()
 
     for attempt in range(max_attempts):
+        if timeout_seconds and (time.time() - start_time) > timeout_seconds:
+            if verbose:
+                print(" " * 45, end="\r") # Clear progress line
+                print(f"  Timed out after {timeout_seconds}s (seed={actual_seed})")
+            return None
+
         if verbose and (attempt + 1) % 1000 == 0:
             print(f"    ... searching ({attempt + 1}/{max_attempts})", end="\r", flush=True)
 
@@ -241,9 +249,7 @@ PUZZLE_NAMES = {
     9:  ["Nebula I",    "Nebula II",    "Nebula III",  "Nebula IV",   "Nebula V",
          "Nebula VI",   "Nebula VII",   "Nebula VIII", "Nebula IX",   "Nebula X"],
     10: ["Cluster I",   "Cluster II",   "Cluster III", "Cluster IV",  "Cluster V",
-         "Cluster VI",  "Cluster VII",  "Cluster VIII","Cluster IX",  "Cluster X"],
-    11: ["Void I",      "Void II",      "Void III",    "Void IV",     "Void V"],
-    12: ["Cosmos I",    "Cosmos II",    "Cosmos III",  "Cosmos IV",   "Cosmos V"],
+         "Cluster VI",  "Cluster VII",  "Cluster VIII","Cluster IX",  "Cluster X"]
 }
 
 def get_name(size, index):
@@ -292,7 +298,7 @@ Examples:
         """
     )
     parser.add_argument("--size",    type=int, default=None,
-                        help="Grid size N — any value from 5 upward (default: 5, 6, 7, 8, 9)")
+                        help="Grid size N — value from 5 to 10 (default: 5-10)")
     parser.add_argument("--count",   type=int, default=1,
                         help="Number of puzzles per size (default: 1)")
     parser.add_argument("--seed",    type=int, default=None,
@@ -305,7 +311,11 @@ Examples:
                         help="Show attempt counts during generation")
     args = parser.parse_args()
 
-    sizes = [args.size] if args.size else [5, 6, 7, 8, 9]
+    if args.size and (args.size < 5 or args.size > 10):
+        print(f"Error: Size {args.size} is not supported. Please choose a size between 5 and 10.")
+        return
+
+    sizes = [args.size] if args.size else [5, 6, 7, 8, 9, 10]
     all_new_puzzles = []  # flat list for JSON output
 
     for size in sizes:

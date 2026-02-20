@@ -25,6 +25,27 @@ Use the Python generator to create new constellations:
 python3 starstruck_generator.py --size 8 --count 5 --save puzzles.json
 ```
 
+## How to Play on iPhone/Mobile
+
+Since Starstruck is a purely static HTML game with no backend, you can easily play it on your phone:
+
+**Option A: GitHub Pages (Recommended)**
+If you host this repository on GitHub, enable **GitHub Pages** in your repository settings. 
+
+- **Seamless Loading**: If you name your generation file `puzzles.json` and keep it in the same folder as `starstruck.html`, the game will **automatically load** your puzzles when you open the site on your iPhone!
+- **Zero Transfer**: You don't need to manually transfer files to your phone. Just commit/push to GitHub and refresh the page on Safari.
+
+**Option B: Local File via iCloud**
+1. Generate your puzzles on your Mac: `python3 starstruck_generator.py --save puzzles.json`.
+2. Move `starstruck.html` and `puzzles.json` to your **iCloud Drive** (or send them via **AirDrop**).
+3. Open the **Files app** on your iPhone, find the folder, and tap `starstruck.html`.
+4. Tap "Load Puzzles" and select your `puzzles.json` from the same folder.
+
+**Option C: Local Network Server**
+1. Run a local web server on your computer: `python3 -m http.server 8000`
+2. Find your computer's local IP address (e.g., `192.168.1.5`).
+3. Open your iPhone's browser and go to `http://<your-ip>:8000/starstruck.html`.
+
 ## How to Play
 
 1. Open `starstruck.html` in your browser.
