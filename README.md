@@ -35,6 +35,16 @@ If you host this repository on GitHub, enable **GitHub Pages** in your repositor
 - **Seamless Loading**: If you name your generation file `puzzles.json` and keep it in the same folder as `starstruck.html`, the game will **automatically load** your puzzles when you open the site on your iPhone!
 - **Zero Transfer**: You don't need to manually transfer files to your phone. Just commit/push to GitHub and refresh the page on Safari.
 
+### Automated Updates (GitHub Actions)
+The repository now includes a GitHub Action in `.github/workflows/generate_puzzles.yml` that:
+1. Runs automatically every day at 00:00 UTC.
+2. Generates a fresh set of puzzles across all sizes (5x5 to 10x10).
+3. Automatically commits the new `puzzles.json` back to your repository.
+
+This means your mobile game will have a **fresh daily challenge** without you ever needing to touch your computer!
+
+**Note**: To enable this, ensure "Read and write permissions" are enabled for GitHub Actions in your repository settings (Settings > Actions > General > Workflow permissions).
+
 **Option B: Local File via iCloud**
 1. Generate your puzzles on your Mac: `python3 starstruck_generator.py --save puzzles.json`.
 2. Move `starstruck.html` and `puzzles.json` to your **iCloud Drive** (or send them via **AirDrop**).
